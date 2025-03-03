@@ -1,0 +1,77 @@
+import { useState, useEffect } from "react";
+
+export default function TimerApp() {
+  const [time, setTime] = useState(10); // Temps du timer en secondes
+  const [loops, setLoops] = useState(1); // Nombre de répétitions
+  const [running, setRunning] = useState(false);
+  const [currentLoop, setCurrentLoop] = useState(0);
+  const [secondsLeft, setSecondsLeft] = useState(time);
+  
+  useEffect(() => {
+    let interval;
+    if (running && currentLoop < loops) {
+      interval = setInterval(() => {
+        setSecondsLeft((prev) => {
+          if (prev <= 1) {
+            playSound();
+            if (currentLoop + 1 < loops) {
+              setCurrentLoop((loop) => loop + 1);
+              return time; // Réinitialiser le timer
+            } else {
+              setRunning(false);
+              return 0;
+            }
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [running, currentLoop, loops, time]);
+
+  const playSound = () => {
+    const audio = new Audio("https://www.soundjay.com/button/beep-07.wav");
+    audio.play();
+  };
+
+  const startTimer = () => {
+    setCurrentLoop(0);
+    setSecondsLeft(time);
+    setRunning(true);
+  };
+
+  return (
+    <div className="flex flex-col items-center p-4">
+      <h1 className="text-2xl font-bold">Timer en boucle</h1>
+      <div className="mt-4">
+        <label>Temps (s) :</label>
+        <input
+          type="number"
+          value={time}
+          onChange={(e) => setTime(Number(e.target.value))}
+          className="border p-2 mx-2"
+          disabled={running}
+        />
+      </div>
+      <div className="mt-2">
+        <label>Répétitions :</label>
+        <input
+          type="number"
+          value={loops}
+          onChange={(e) => setLoops(Number(e.target.value))}
+          className="border p-2 mx-2"
+          disabled={running}
+        />
+      </div>
+      <div className="mt-4 text-xl font-semibold">{secondsLeft} sec</div>
+      <div className="mt-2">Cycle {currentLoop + 1} / {loops}</div>
+      <button
+        onClick={startTimer}
+        className="mt-4 p-2 bg-blue-500 text-white rounded"
+        disabled={running}
+      >
+        Démarrer
+      </button>
+    </div>
+  );
+}
